@@ -9,52 +9,11 @@ import {
   UtensilsCrossed,
   Car,
 } from "lucide-react";
-
-export const DASHBOARD_STEPS = [
-  "header",
-  "summary",
-  "net",
-  "velocity",
-  "actions",
-  "transactions",
-] as const;
-
-export type DashboardStepId = (typeof DASHBOARD_STEPS)[number];
+import { Piece } from "./Piece";
 
 interface BuildableDashboardProps {
   /** Index of the highest step currently revealed (-1 = empty). */
   activeStep: number;
-}
-
-const piece = {
-  hidden: { opacity: 0, y: 18, scale: 0.98 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
-
-function Piece({
-  index,
-  activeStep,
-  children,
-}: {
-  index: number;
-  activeStep: number;
-  children: React.ReactNode;
-}) {
-  const shown = activeStep >= index;
-  return (
-    <motion.div
-      variants={piece}
-      initial="hidden"
-      animate={shown ? "show" : "hidden"}
-    >
-      {children}
-    </motion.div>
-  );
 }
 
 /**

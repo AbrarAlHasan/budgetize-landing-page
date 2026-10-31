@@ -60,6 +60,7 @@ export function Hero() {
             animate="show"
             style={{ y: copyY }}
           >
+           <TextShield strength={0.5}>
             <motion.div
               variants={item}
               className="mb-6 inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-medium text-slate-300"
@@ -105,6 +106,7 @@ export function Hero() {
               <span className="hidden h-4 w-px bg-white/15 sm:block" />
               <span>100% offline</span>
             </motion.div>
+            </TextShield>
           </motion.div>
 
           {/* Phone */}

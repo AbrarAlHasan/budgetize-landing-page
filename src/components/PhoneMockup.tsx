@@ -8,6 +8,14 @@ interface PhoneMockupProps {
    * phone width (390px) then scaled, so proportions match an actual device.
    */
   scale?: number;
+  /**
+   * When true, the inner screen does not capture wheel/scroll. Use this in the
+   * scroll-driven showcase sections, where the screen content is revealed by
+   * the page scroll, not by scrolling inside the phone. This lets the wheel
+   * pass through to the page so hovering the phone never traps the scroll.
+   * Defaults to false (free scrolling) for standalone mockups like the Hero.
+   */
+  lockScroll?: boolean;
 }
 
 const DEVICE_WIDTH = 390; // real iPhone logical width
@@ -22,6 +30,7 @@ export function PhoneMockup({
   children,
   className = "",
   scale = 0.72,
+  lockScroll = false,
 }: PhoneMockupProps) {
   // Outer wrapper reserves the scaled footprint so layout isn't thrown off.
   const frameW = DEVICE_WIDTH + 24; // + bezel padding
@@ -67,9 +76,15 @@ export function PhoneMockup({
                 </div>
               </div>
 
-              {/* Live screen content */}
+              {/* Live screen content. In lockScroll mode the wheel must pass
+                  through to the page (content is page-scroll driven), so we
+                  disable inner scrolling and pointer events on the scroller. */}
               <div
-                className="no-scrollbar relative overflow-y-auto overscroll-contain"
+                className={`no-scrollbar relative ${
+                  lockScroll
+                    ? "overflow-hidden pointer-events-none"
+                    : "overflow-y-auto overscroll-contain"
+                }`}
                 style={{
                   height: DEVICE_HEIGHT - 44,
                   scrollbarWidth: "none",

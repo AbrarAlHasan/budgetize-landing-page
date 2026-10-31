@@ -4,6 +4,10 @@ import { Hero } from "./sections/Hero";
 import { Highlights } from "./sections/Highlights";
 import { Features } from "./sections/Features";
 import { AppShowcase } from "./sections/AppShowcase";
+import { ReportsShowcase } from "./sections/ReportsShowcase";
+import { SettingsShowcase } from "./sections/SettingsShowcase";
+import { NotificationsShowcase } from "./sections/NotificationsShowcase";
+import { ExchangeShowcase } from "./sections/ExchangeShowcase";
 import { Security } from "./sections/Security";
 import { HowItWorks } from "./sections/HowItWorks";
 import { CTA } from "./sections/CTA";
@@ -30,6 +34,10 @@ export default function App() {
           <Highlights />
           <Features />
           <AppShowcase />
+          <ReportsShowcase />
+          <SettingsShowcase />
+          <NotificationsShowcase />
+          <ExchangeShowcase />
           <Security />
           <HowItWorks />
           <CTA />
