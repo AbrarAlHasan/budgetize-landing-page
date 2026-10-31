@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Lock, Star, ChevronDown } from "lucide-react";
 import { PhoneMockup } from "../components/PhoneMockup";
@@ -25,6 +25,16 @@ const item = {
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
 
+  // Smaller phone on mobile so the copy + store badges + device all fit the
+  // stacked layout without overflowing or getting pushed off-screen.
+  const [phoneScale, setPhoneScale] = useState(0.72);
+  useEffect(() => {
+    const apply = () => setPhoneScale(window.innerWidth >= 1024 ? 0.72 : 0.5);
+    apply();
+    window.addEventListener("resize", apply, { passive: true });
+    return () => window.removeEventListener("resize", apply);
+  }, []);
+
   // Local scroll just for hero parallax/fade. The travelling 3D is global.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -40,9 +50,9 @@ export function Hero() {
     <section
       id="top"
       ref={sectionRef}
-      className="relative h-screen overflow-hidden"
+      className="relative overflow-hidden lg:h-screen"
     >
-      <div className="flex min-h-screen flex-col justify-center pt-28 md:pt-24">
+      <div className="flex min-h-screen flex-col justify-start pt-24 pb-16 lg:justify-center lg:pb-0 lg:pt-24">
         {/* Background glows (3D travels in the global canvas behind this) */}
         <div className="absolute inset-0 grid-bg mask-fade-b opacity-60" />
         <div className="absolute left-1/2 top-0 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-brand-600/25 blur-[140px]" />
@@ -51,7 +61,7 @@ export function Hero() {
 
         <motion.div
           style={{ opacity: contentOpacity }}
-          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-5 lg:grid-cols-2"
+          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-5 lg:grid-cols-2 lg:gap-12"
         >
           {/* Copy */}
           <motion.div
@@ -121,17 +131,19 @@ export function Hero() {
               style={{ y: phoneY, rotate: phoneRotate }}
               className="animate-float"
             >
-              <PhoneMockup>
+              <PhoneMockup scale={phoneScale}>
                 <DashboardScreen />
               </PhoneMockup>
             </motion.div>
           </motion.div>
         </motion.div>
 
-        {/* Scroll hint */}
+        {/* Scroll hint — hidden on short/mobile screens where the hero copy
+            fills the viewport and would otherwise overlap it. Shown from lg up
+            where there's bottom whitespace. */}
         <motion.div
           style={{ opacity: contentOpacity }}
-          className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400"
+          className="pointer-events-none absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1 text-slate-400 lg:flex"
         >
           <span className="text-xs">Scroll to explore</span>
           <motion.div
@@ -142,7 +154,7 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-t from-ink-950 to-transparent lg:block" />
       </div>
     </section>
   );

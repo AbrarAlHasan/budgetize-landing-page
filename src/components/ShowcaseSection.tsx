@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   motion,
   AnimatePresence,
@@ -50,6 +50,36 @@ export function ShowcaseSection({
   const sectionRef = useRef<HTMLElement>(null);
   const [active, setActive] = useState(-1);
 
+  // Responsive phone scale. On narrow / short screens the full-height phone
+  // (~844px tall at scale 1) won't fit the pinned viewport once the heading is
+  // stacked above it, which clipped the top of the device. We scale the phone
+  // down to whatever the available height allows so the whole device stays
+  // visible. Desktop keeps the original 0.72.
+  const [phoneBaseScale, setPhoneBaseScale] = useState(0.72);
+
+  useEffect(() => {
+    const PHONE_FRAME_HEIGHT = 844; // 820 screen + 24 bezel, at scale 1
+    const computeScale = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (vw >= 1024) {
+        // lg and up: side-by-side layout, phone has the full column height.
+        setPhoneBaseScale(0.72);
+        return;
+      }
+      // Mobile / tablet (stacked): reserve room for navbar + compact heading
+      // and keep the phone within the remaining height.
+      const reserved = 200; // navbar + eyebrow/heading + padding
+      const available = Math.max(vh - reserved, 320);
+      const fitScale = available / PHONE_FRAME_HEIGHT;
+      // Clamp so it never gets larger than desktop or uselessly small.
+      setPhoneBaseScale(Math.min(0.62, Math.max(0.42, fitScale)));
+    };
+    computeScale();
+    window.addEventListener("resize", computeScale, { passive: true });
+    return () => window.removeEventListener("resize", computeScale);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -78,20 +108,22 @@ export function ShowcaseSection({
       className="relative"
       style={{ height: `${steps.length * 70 + 120}vh` }}
     >
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 lg:grid-cols-2">
-          {/* LEFT — descriptions synced to the active piece */}
-          <div className="relative order-2 lg:order-1">
-            <div className="mb-8">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden pt-16 lg:pt-0">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-6 px-5 lg:grid-cols-2 lg:gap-10">
+          {/* LEFT — descriptions synced to the active piece. On mobile the
+              heading sits above the phone so the device has the lower, taller
+              part of the viewport and never gets clipped under the navbar. */}
+          <div className="relative order-1">
+            <div className="mb-4 lg:mb-8">
               <span className="text-sm font-semibold uppercase tracking-widest text-brand-400">
                 {eyebrow}
               </span>
-              <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl lg:mt-3 lg:text-4xl">
                 {heading}
               </h2>
             </div>
 
-            <div className="relative min-h-[220px]">
+            <div className="relative hidden min-h-[220px] lg:block">
               <AnimatePresence mode="wait">
                 {active < 0 ? (
                   <motion.div
@@ -111,7 +143,7 @@ export function ShowcaseSection({
             </div>
 
             {/* progress dots */}
-            <div className="mt-10 flex gap-2">
+            <div className="mt-4 flex gap-2 lg:mt-10">
               {steps.map((s, i) => (
                 <span
                   key={s.tag}
@@ -130,7 +162,7 @@ export function ShowcaseSection({
               so nothing shows through / washes out the screen. */}
           <motion.div
             style={{ y: phoneY, scale: phoneScale }}
-            className="relative z-20 order-1 flex justify-center lg:order-2 lg:justify-end"
+            className="relative z-20 order-2 flex justify-center lg:justify-end"
           >
             <div className="relative">
               {/* Opaque stage panel so the travelling 3D never bleeds over or
@@ -138,7 +170,9 @@ export function ShowcaseSection({
                   close to the device so it hugs the frame instead of poking
                   out past it. */}
               <div className="absolute -inset-x-4 -inset-y-6 -z-10 rounded-[3rem] bg-ink-950/90 backdrop-blur-md" />
-              <PhoneMockup lockScroll>{renderScreen(active)}</PhoneMockup>
+              <PhoneMockup lockScroll scale={phoneBaseScale}>
+                {renderScreen(active)}
+              </PhoneMockup>
             </div>
           </motion.div>
         </div>
